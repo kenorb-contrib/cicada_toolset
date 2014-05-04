@@ -44,7 +44,7 @@ class RuneText(object):
 		# Check if filename was given
 		if filename != 'none':
 			self.readFile(filename)
-			self.udpate()
+			self.update()
 	def readFile(self,filename):
 		"""
 		Read a machine-readable rune file
@@ -55,7 +55,7 @@ class RuneText(object):
 		
 		# Parse lines
 		for line in lines:
-			self.words.extend(self.parseLine(line))
+			self.parseLine(line)
 		
 		# Convert characters to numbers
 		self.convertCharsToNums()
@@ -65,12 +65,18 @@ class RuneText(object):
 		"""
 		
 		# Get number of words and runes
-		self.now = self.numWords()
-		self.nor = self.numRunes()
-		
+		self.numWords()
+		self.numRunes()
+
 		# Calculate distribution of runes
 		self.calculateDistribution()
-	def isNumeric(s):
+		
+		# Calculate Index of Coincidence
+		self.calculateIOC()
+		
+		# Do Friedman test
+		self.calculateFriedman()
+	def isNumeric(self,s):
 		"""
 		Check if the passed string is numeric
 		"""
@@ -83,7 +89,7 @@ class RuneText(object):
 		"""
 		Return number of words
 		"""
-		return len(self.words)
+		self.now = len(self.words)
 	def numRunes(self):
 		"""
 		Return number of runes
@@ -93,23 +99,24 @@ class RuneText(object):
 			for rune in word:
 				if rune >= 0 and rune < 29:
 					count += 1
-		return count
-	def parseLine(line):
+		self.nor = count
+	def parseLine(self,line):
 		"""
 		Parse a line from an input file
 		"""
+		line = line.replace("\n","")
 		words_string = line.split('.')
 		word_array = []
 		for word in words_string:
 			word_array.append(word.split('-'))
-		return word_array
+		self.words.extend(word_array)
 	def convertCharsToNums(self):
 		"""
 		Converts data from a read file to numbers
 		"""
 		if not self.isNumeric(self.words[0][0]):
 			word_array = []
-			for word in word_array:
+			for word in self.words:
 				rune_array = []
 				for rune in word:
 					if rune in RuneNumbers:
@@ -120,7 +127,7 @@ class RuneText(object):
 			self.words = word_array
 		else:
 			word_array = []
-			for word in word_array:
+			for word in self.words:
 				rune_array = []
 				for rune in word:
 					if self.isNumeric(rune):
@@ -135,7 +142,7 @@ class RuneText(object):
 		"""
 		count_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 		percentage = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-		for word in words:
+		for word in self.words:
 			for rune in word:
 				if rune >= 0 and rune < 29:
 					count_array[rune] += 1
@@ -166,7 +173,7 @@ class RuneText(object):
 		Do the Kasiski test
 		"""
 		pass
-	def nGrams(n,min_appearances,respect_words=False):
+	def nGrams(self,n,min_appearances,respect_words=False):
 		"""
 		Calculate n-grams
 		"""
@@ -183,7 +190,7 @@ class RuneText(object):
 			for i in range(0,len(rune_array)-(n-1)):
 				ngram_word = ""
 				for j in range(0,n):
-					ngram_word += rune_array[i+j]
+					ngram_word += str(rune_array[i+j])
 					if j != (n-1):
 						ngram_word += "-"
 				# Check if entry exists
@@ -209,7 +216,7 @@ class RuneText(object):
 				for i in range(0,len(word)-(n-1)):
 					ngram_word = ""
 					for j in range(0,n):
-						ngram_word += word[i+j]
+						ngram_word += str(word[i+j])
 						if j != (n-1):
 							ngram_word += "-"
 					# Check if entry exists
@@ -222,7 +229,7 @@ class RuneText(object):
 		# Sort out sequences that appear not often enough
 		keyarray = []
 		for key in ngram:
-			if ngram[key] < min_appearance:
+			if ngram[key] < min_appearances:
 				keyarray.append(key)
 		for key in keyarray:
 			del ngram[key]
