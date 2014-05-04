@@ -28,6 +28,9 @@ RunesUnicode = ['&#x16A0;','&#x16A2;','&#x16A6;','&#x16A9;','&#x16B1;',
 	'&#x16D2;','&#x16D6;','&#x16D7;','&#x16DA;','&#x16DD;','&#x16DF;',
 	'&#x16DE;','&#x16AA;','&#x16AB;','&#x16A3;','&#x16E1;','&#x16E0;']
 
+RunesASCII = ["F","U","TH","O","R","C","G","W","H","N","I","J","EO","P",
+	"X","S","T","B","E","M","L","NG","OE","D","A","AE","Y","IO","EA"]
+
 class RuneText(object):
 	"""
 	Rune-text object with crypto-methods
@@ -236,3 +239,19 @@ class RuneText(object):
 		
 		# Sort dictionary descending
 		return sorted(sorted(ngram.items()),reverse=True,key=lambda x: x[1])
+	def runesASCII(self):
+		"""
+		Returns the text in ASCII representation
+		"""
+		text = ""
+		count = 0
+		for word in self.words:
+			for rune in word:
+				text += RunesASCII[rune]
+			if count > 10:
+				count = 0
+				text += "\n"
+			else:
+				count += 1
+				text += " "
+		return text
