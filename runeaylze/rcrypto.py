@@ -239,6 +239,18 @@ class RuneText(object):
 		
 		# Sort dictionary descending
 		return sorted(sorted(ngram.items()),reverse=True,key=lambda x: x[1])
+	def wordLengths(self):
+		"""
+		Returns a listing of word length statistics
+		"""
+		wordlengths = {}
+		for word in self.words:
+			if len(word) in wordlengths:
+				wordlengths[len(word)] += 1
+			else:
+				w = { len(word):1 }
+				wordlengths.update(w)
+		return sorted(wordlengths.items())
 	def runesASCII(self):
 		"""
 		Returns the text in ASCII representation
