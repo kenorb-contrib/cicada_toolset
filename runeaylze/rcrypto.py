@@ -180,6 +180,7 @@ class RuneText(object):
 		"""
 		Calculate n-grams
 		"""
+		position = 0
 		if not respect_words:
 			# Put all runes into one array
 			rune_array = []
@@ -198,10 +199,12 @@ class RuneText(object):
 						ngram_word += "-"
 				# Check if entry exists
 				if ngram_word in ngram:
-					ngram[ngram_word] += 1
+					ngram[ngram_word][0] += 1
+					ngram[ngram_word][1].append(position)
 				else:
-					add_ngram = { ngram_word:1 }
+					add_ngram = { ngram_word: [1,[position]] }
 					ngram.update(add_ngram)
+				position += 1
 		else:
 			# Put all runes into one array
 			rune_array = []
@@ -224,21 +227,23 @@ class RuneText(object):
 							ngram_word += "-"
 					# Check if entry exists
 					if ngram_word in ngram:
-						ngram[ngram_word] += 1
+						ngram[ngram_word][0] += 1
+						ngram[ngram_word][1].append(position)
 					else:
-						add_ngram = { ngram_word:1 }
+						add_ngram = { ngram_word: [1,[position]] }
 						ngram.update(add_ngram)
+					position += 1
 						
 		# Sort out sequences that appear not often enough
 		keyarray = []
 		for key in ngram:
-			if ngram[key] < min_appearances:
+			if ngram[key][0] < min_appearances:
 				keyarray.append(key)
 		for key in keyarray:
 			del ngram[key]
 		
 		# Sort dictionary descending
-		return sorted(sorted(ngram.items()),reverse=True,key=lambda x: x[1])
+		return sorted(sorted(ngram.items()),reverse=True,key=lambda x: x[1][0])
 	def wordLengths(self):
 		"""
 		Returns a listing of word length statistics
