@@ -272,3 +272,61 @@ class RuneText(object):
 				count += 1
 				text += " "
 		return text
+	def vigenereTry(self,keyword,offset=0,max_displayed_chars=10):
+		"""
+		Tries a vigenere key and displays results
+		"""
+		
+		# Convert key representation
+		num_key = []
+		num_reverse = []
+		key_split = keyword.split("-")
+		for key in key_split:
+			if not self.isNumeric(key):
+				if key in RuneNumbers:
+					num_key.append(RuneNumbers[key])
+					num_reverse.append(RuneNumbersReversed[key])
+			else:
+				if self.isNumeric(key):
+					num_key.append(int(key))
+					num_reverse.append(28-int(key))
+		
+		key_counter = 0
+		rune_counter = 0
+		text1 = ""
+		text2 = ""
+		text3 = ""
+		text4 = ""
+		# Loop through words
+		for word in self.words:
+			for rune in word:
+				# Check if rune counter reached max
+				if(rune_counter < (max_displayed_chars -1)):
+					rune_counter += 1
+				else:
+					break
+				text1 += RunesASCII[self.vigenereDecrypt(rune,num_key[key_counter])]
+				text2 += RunesASCII[self.vigenereDecrypt(num_key[key_counter],rune)]
+				text3 += RunesASCII[self.vigenereDecrypt(rune,num_reverse[key_counter])]
+				text4 += RunesASCII[self.vigenereDecrypt(num_reverse[key_counter],rune)]
+				# Increment key counter
+				if(key_counter < (len(num_key) - 1)):
+					key_counter += 1
+				else:
+					key_counter = 0
+			text1 += " "
+			text2 += " "
+			text3 += " "
+			text4 += " "
+		
+		# Print results
+		print("Variation 1: "+text1)
+		print("Variation 2: "+text2)
+		print("Variation 3: "+text3)
+		print("Variation 4: "+text4)
+		
+	def vigenereDecrypt(self,cipher,key):
+		"""
+		Decipheres a cipher and key rune ID
+		"""
+		return (cipher-key) % 29
