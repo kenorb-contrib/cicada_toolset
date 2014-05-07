@@ -43,6 +43,7 @@ class RuneText(object):
 		self.distribution = [] # Distribution of Runes
 		self.ioc = 0.0 		# Index of Coincidence
 		self.friedman = 0	# Friedman key length
+		self.mask = []		# Vigenere mask (autokey)
 		
 		# Check if filename was given
 		if filename != 'none':
@@ -272,7 +273,7 @@ class RuneText(object):
 				count += 1
 				text += " "
 		return text
-	def vigenereTry(self,keyword,offset=0,max_displayed_chars=10):
+	def vigenereTry(self,keyword,offset=0,max_displayed_chars=10,use_mask=False):
 		"""
 		Tries a vigenere key and displays results
 		"""
@@ -280,17 +281,28 @@ class RuneText(object):
 		# Convert key representation
 		num_key = []
 		num_reverse = []
-		key_split = keyword.split("-")
-		for key in key_split:
-			if not self.isNumeric(key):
-				if key in RuneNumbers:
-					num_key.append(RuneNumbers[key])
-					num_reverse.append(RuneNumbersReversed[key])
-			else:
-				if self.isNumeric(key):
-					num_key.append(int(key))
-					num_reverse.append(28-int(key))
+		if not use_mask:
+			key_split = keyword.split("-")
+			for key in key_split:
+				if not self.isNumeric(key):
+					if key in RuneNumbers:
+						num_key.append(RuneNumbers[key])
+						num_reverse.append(RuneNumbersReversed[key])
+				else:
+					if self.isNumeric(key):
+						num_key.append(int(key))
+						num_reverse.append(28-int(key))
+		else:
+			for key in self.mask:
+				if key != "-1":
+					if key in RuneNumbers:
+						num_key.append(RuneNumbers[key])
+						num_reverse.append(RuneNumbersReversed[key])
 		
+		# Set max displayed chars to keylength if it's bigger
+		if len(num_key) > max_displayed_chars:
+			max_displayed_chars = len(num_key)
+						
 		key_counter = 0
 		rune_counter = 0
 		text1 = ""
@@ -319,12 +331,8 @@ class RuneText(object):
 			text3 += " "
 			text4 += " "
 		
-		# Print results
-		print("Variation 1: "+text1)
-		print("Variation 2: "+text2)
-		print("Variation 3: "+text3)
-		print("Variation 4: "+text4)
-	
+		# Return results
+		return [text1,text2,text3,text4]
 	def vigenereKeyElimination(offset=0):
 		"""
 		Takes the ciphertext and returns it with offset
@@ -350,3 +358,27 @@ class RuneText(object):
 			if len(word) == length:
 				returnlist.extend([word_runes,position])
 		return returnlist
+	def resetMask(self):
+		"""
+		Resets the vigenere mask
+		"""
+		self.mask = []
+	def maskWords(self,length,wordmask):
+		"""
+		Mask words with specific length
+		"""
+		mask_array = wordmask.split("-")
+		if len(mask_array) != length:
+			return
+	
+		# Fill mask with -1
+		if len(self.mask) != self.nor:
+			for i in range(0,self.nor):
+				self.mask.append("-1")
+		
+		# Get wordlist
+		wordlist = self.printWords(length)	
+		for word in wordlist:
+			position = word[1]
+			for i in range(0,length):
+				self.mask[position+i] = mask_array[i]
