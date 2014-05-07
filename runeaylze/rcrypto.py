@@ -171,7 +171,7 @@ class RuneText(object):
 		Do the Friedman test 
 		"""
 		A = 1.0/29.0
-		B = 0.06141
+		B = 0.06147
 		self.friedman = int(round(self.nor*(B-A) 
 			/ (self.ioc*(self.nor-1)+B-self.nor*A),0))
 	def calculateKasiski(self):
@@ -346,13 +346,13 @@ class RuneText(object):
 		if len(out_file) > 0:
 			f = open(out_file,'w+')
 			f.write(re.sub("(.{64})", "\\1\n", text1, 0, re.DOTALL))
-			f.write("\n");
+			f.write("\n\n");
 			f.write(re.sub("(.{64})", "\\1\n", text2, 0, re.DOTALL))
-			f.write("\n");
+			f.write("\n\n");
 			f.write(re.sub("(.{64})", "\\1\n", text3, 0, re.DOTALL))
-			f.write("\n");
+			f.write("\n\n");
 			f.write(re.sub("(.{64})", "\\1\n", text4, 0, re.DOTALL))
-			f.write("\n");
+			f.write("\n\n");
 			f.close()
 		
 		# Return results
@@ -382,6 +382,21 @@ class RuneText(object):
 			if len(word) == length:
 				returnlist.append([word_runes,word_pos])
 		return returnlist
+	def printWordsASCII(self,length):
+		"""
+		Returns a list of words with specific length in ASCII
+		"""
+		position = 0
+		returnlist = []
+		for word in self.words:
+			word_runes = ""
+			word_pos = position
+			for rune in word:
+				word_runes += RunesASCII[rune]
+				position += 1
+			if len(word) == length:
+				returnlist.append([word_runes,word_pos])
+		return returnlist
 	def resetMask(self):
 		"""
 		Resets the vigenere mask
@@ -406,3 +421,20 @@ class RuneText(object):
 			position = word[1]
 			for i in range(0,length):
 				self.mask[position+i] = mask_array[i].lower()
+	def maskRunes(self,old_rune,rune_substitute='f'):
+		"""
+		Mask runes
+		"""
+		
+		# Fill mask with -1
+		if len(self.mask) != self.nor:
+			for i in range(0,self.nor):
+				self.mask.append(-1)
+		
+		# Substitute runes
+		position = 0
+		for word in self.words:
+			for rune in word:
+				if rune == RuneNumbers[old_rune]:
+					self.mask[position] = rune_substitute
+				position += 1
