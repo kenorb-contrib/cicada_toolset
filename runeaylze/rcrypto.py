@@ -324,9 +324,29 @@ class RuneText(object):
 		print("Variation 2: "+text2)
 		print("Variation 3: "+text3)
 		print("Variation 4: "+text4)
-		
+	
+	def vigenereKeyElimination(offset=0):
+		"""
+		Takes the ciphertext and returns it with offset
+		"""
+		pass		
 	def vigenereDecrypt(self,cipher,key):
 		"""
 		Decipheres a cipher and key rune ID
 		"""
 		return (cipher-key) % 29
+	def printWords(self,length):
+		"""
+		Returns a list of words with specific length
+		"""
+		position = 0
+		returnlist = []
+		for word in self.words:
+			word_runes = []
+			word_pos = position
+			for rune in word:
+				word_runes.append(rune)	
+				position += 1
+			if len(word) == length:
+				returnlist.extend([word_runes,position])
+		return returnlist
