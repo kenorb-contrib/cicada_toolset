@@ -1,6 +1,8 @@
 """
 crypto.py: Python module for rune-text analyzing
 """
+import re
+
 RuneNumbers = { "f":0,"u":1,"th":2,"o":3,"r":4,
 	"c":5,"k":5,"c/k":5,"g":6,"w":7,"h":8,
 	"n":9,"i":10,"j":11,"eo":12,"p":13,"x":14,
@@ -273,7 +275,7 @@ class RuneText(object):
 				count += 1
 				text += " "
 		return text
-	def vigenereTry(self,keyword="",offset=0,max_displayed_chars=10,use_mask=False):
+	def vigenereTry(self,keyword="",offset=0,max_displayed_chars=10,use_mask=False,out_file=""):
 		"""
 		Tries a vigenere key and displays results
 		"""
@@ -339,6 +341,19 @@ class RuneText(object):
 			text2 += " "
 			text3 += " "
 			text4 += " "
+		
+		# Write to file if needed
+		if len(out_file) > 0:
+			f = open(out_file,'w+')
+			f.write(re.sub("(.{64})", "\\1\n", text1, 0, re.DOTALL))
+			f.write("\n");
+			f.write(re.sub("(.{64})", "\\1\n", text2, 0, re.DOTALL))
+			f.write("\n");
+			f.write(re.sub("(.{64})", "\\1\n", text3, 0, re.DOTALL))
+			f.write("\n");
+			f.write(re.sub("(.{64})", "\\1\n", text4, 0, re.DOTALL))
+			f.write("\n");
+			f.close()
 		
 		# Return results
 		return [text1,text2,text3,text4]
