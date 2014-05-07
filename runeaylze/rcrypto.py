@@ -438,3 +438,31 @@ class RuneText(object):
 				if rune == RuneNumbers[old_rune]:
 					self.mask[position] = rune_substitute
 				position += 1
+	def maskToFile(self,filename):
+		"""
+		Write the mask to a file for easy editing
+		"""
+		f = open(filename,"w+")
+		string = ",".join([str(x).upper() for x in self.mask])
+		f.write(re.sub("(.{64})", "\\1\n", string, 0, re.DOTALL))
+		f.close()
+	def maskFromFile(self,filename):
+		"""
+		Read mask from file
+		"""
+		f = open(filename,"r")
+		lines = f.readlines()
+		f.close()
+		
+		inputstring = ""
+		for line in lines:
+			inputstring += line.replace("\n","")
+		string_array = inputstring.split(",")
+		
+		# Turn string array into mask
+		self.mask = []
+		for s in string_array:
+			if s == "-1":
+				self.mask.append(-1)
+			else:
+				self.mask.append(s.lower())
