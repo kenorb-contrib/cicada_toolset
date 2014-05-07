@@ -123,8 +123,8 @@ class RuneText(object):
 			for word in self.words:
 				rune_array = []
 				for rune in word:
-					if rune in RuneNumbers:
-						rune_array.append(RuneNumbers[rune])
+					if rune.lower() in RuneNumbers:
+						rune_array.append(RuneNumbers[rune.lower()])
 					else:
 						rune_array.append(-1)
 				word_array.append(rune_array)
@@ -273,7 +273,7 @@ class RuneText(object):
 				count += 1
 				text += " "
 		return text
-	def vigenereTry(self,keyword,offset=0,max_displayed_chars=10,use_mask=False):
+	def vigenereTry(self,keyword="",offset=0,max_displayed_chars=10,use_mask=False):
 		"""
 		Tries a vigenere key and displays results
 		"""
@@ -294,10 +294,13 @@ class RuneText(object):
 						num_reverse.append(28-int(key))
 		else:
 			for key in self.mask:
-				if key != "-1":
+				if key != (-1):
 					if key in RuneNumbers:
 						num_key.append(RuneNumbers[key])
 						num_reverse.append(RuneNumbersReversed[key])
+				else:
+					num_key.append(-1)
+					num_reverse.append(-1)
 		
 		# Set max displayed chars to keylength if it's bigger
 		if len(num_key) > max_displayed_chars:
@@ -313,14 +316,20 @@ class RuneText(object):
 		for word in self.words:
 			for rune in word:
 				# Check if rune counter reached max
-				if(rune_counter < (max_displayed_chars -1)):
+				if(rune_counter < max_displayed_chars):
 					rune_counter += 1
 				else:
 					break
-				text1 += RunesASCII[self.vigenereDecrypt(rune,num_key[key_counter])]
-				text2 += RunesASCII[self.vigenereDecrypt(num_key[key_counter],rune)]
-				text3 += RunesASCII[self.vigenereDecrypt(rune,num_reverse[key_counter])]
-				text4 += RunesASCII[self.vigenereDecrypt(num_reverse[key_counter],rune)]
+				if num_key[key_counter] != (-1):
+					text1 += RunesASCII[self.vigenereDecrypt(rune,num_key[key_counter])]
+					text2 += RunesASCII[self.vigenereDecrypt(num_key[key_counter],rune)]
+					text3 += RunesASCII[self.vigenereDecrypt(rune,num_reverse[key_counter])]
+					text4 += RunesASCII[self.vigenereDecrypt(num_reverse[key_counter],rune)]
+				else:
+					text1 += "x"
+					text2 += "x"
+					text3 += "x"
+					text4 += "x"
 				# Increment key counter
 				if(key_counter < (len(num_key) - 1)):
 					key_counter += 1
@@ -356,7 +365,7 @@ class RuneText(object):
 				word_runes.append(rune)	
 				position += 1
 			if len(word) == length:
-				returnlist.extend([word_runes,position])
+				returnlist.append([word_runes,word_pos])
 		return returnlist
 	def resetMask(self):
 		"""
@@ -374,11 +383,11 @@ class RuneText(object):
 		# Fill mask with -1
 		if len(self.mask) != self.nor:
 			for i in range(0,self.nor):
-				self.mask.append("-1")
+				self.mask.append(-1)
 		
 		# Get wordlist
 		wordlist = self.printWords(length)	
 		for word in wordlist:
 			position = word[1]
 			for i in range(0,length):
-				self.mask[position+i] = mask_array[i]
+				self.mask[position+i] = mask_array[i].lower()
