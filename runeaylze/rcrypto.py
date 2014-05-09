@@ -466,3 +466,20 @@ class RuneText(object):
 				self.mask.append(-1)
 			else:
 				self.mask.append(s.lower())
+	def maskFromFunction(self,value_array):
+		"""
+		Read mask values from a function array
+		"""
+		
+		# Reset mask
+		self.mask = []
+		
+		# Fill mask with function values
+		for i in range(self.nor):
+			if i <= (len(value_array)-1):
+				if isinstance(value_array[i], int):
+					self.mask.append(RunesASCII[value_array[i] % 29].lower())
+				else:
+					self.mask.append(-1)
+			else:
+				self.mask.append(-1)
