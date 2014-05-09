@@ -305,7 +305,7 @@ class RuneText(object):
 					num_reverse.append(-1)
 		
 		# Set max displayed chars to keylength if it's bigger
-		if len(num_key) > max_displayed_chars:
+		if len(num_key) > max_displayed_chars and not use_mask:
 			max_displayed_chars = len(num_key)
 						
 		key_counter = 0
@@ -337,10 +337,11 @@ class RuneText(object):
 					key_counter += 1
 				else:
 					key_counter = 0
-			text1 += " "
-			text2 += " "
-			text3 += " "
-			text4 += " "
+			if rune_counter < max_displayed_chars:
+				text1 += " "
+				text2 += " "
+				text3 += " "
+				text4 += " "
 		
 		# Write to file if needed
 		if len(out_file) > 0:
