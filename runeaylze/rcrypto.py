@@ -388,7 +388,7 @@ class RuneText(object):
 		Returns a list of words with specific length in ASCII
 		"""
 		position = 0
-		returnlist = []
+		returnlist = {}
 		for word in self.words:
 			word_runes = ""
 			word_pos = position
@@ -396,8 +396,42 @@ class RuneText(object):
 				word_runes += RunesASCII[rune]
 				position += 1
 			if len(word) == length:
-				returnlist.append([word_runes,word_pos])
-		return returnlist
+				if word_runes in returnlist:
+					returnlist[word_runes].append(word_pos)
+				else:
+					worddic = { word_runes:[word_pos] }
+					returnlist.update(worddic)
+		
+		return sorted(returnlist.items())
+	def processWordDistances(self,wordlength,addwordlength=False):
+		"""
+		Returns the distances between words 
+		"""
+		words = self.printWordsASCII(wordlength)
+		
+		# Sort out words that only appear once
+		keyarray = []
+		for key in words:
+			if len(words[key]) < 2:
+				keyarray.append(key)
+		for key in keyarray:
+			del words[key]
+		
+		# Generate list of distances
+		distances = []
+		for key in words:
+			for i in range(1,len(words[key])):
+				if addwordlength:
+					distances.append(words[key][i]-words[key][i-1]+wordlength)
+				else:
+					distances.append(words[key][i]-words[key][i-1])
+		
+		return distances
+	def processWordDistanceFactors(self,word_distances):
+		"""
+		Process a word distance list and return factors
+		"""
+		pass
 	def resetMask(self):
 		"""
 		Resets the vigenere mask
