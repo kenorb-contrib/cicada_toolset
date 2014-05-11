@@ -431,7 +431,24 @@ class RuneText(object):
 		"""
 		Process a word distance list and return factors
 		"""
-		pass
+		factors = []
+		for distance in word_distances:
+			factors.append(self.factorize(distance))
+		return factors
+	def factorize(self,n):
+		"""
+		Prime factorization
+		"""
+		primfac = []
+		d = 2
+		while d*d <= n:
+			while(n % d) == 0:
+				primfac.append(d)
+				n /= d
+			d += 1
+		if n > 1:
+			primfac.append(n)
+		return primfac
 	def resetMask(self):
 		"""
 		Resets the vigenere mask
