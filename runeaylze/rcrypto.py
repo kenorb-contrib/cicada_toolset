@@ -494,4 +494,4 @@ class RuneText(object):
 		
 		# Fill mask with function values
 		for i in range(self.nor):
-			self.mask.append(RunesASCII[function(i+startx) % 29].lower())
+			self.mask.append(RunesASCII[function(i+start_x) % 29].lower())
