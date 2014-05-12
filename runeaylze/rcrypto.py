@@ -174,11 +174,21 @@ class RuneText(object):
 		B = 0.06147
 		self.friedman = int(round(self.nor*(B-A) 
 			/ (self.ioc*(self.nor-1)+B-self.nor*A),0))
-	def calculateKasiski(self):
+	def calculateKasiski(self,add_word_length=False):
 		"""
 		Do the Kasiski test
 		"""
-		pass
+		
+		# Calculate word lengths
+		lengths = self.wordLengths()
+		
+		# Analyze word distances for every word length
+		factors = []
+		for length in lengths:
+			factors.extend(self.processWordDistanceFactors(self.processWordDistances(length[0],add_word_length)))
+		
+		# Do factor statistics
+		return self.createFactorStatistics(factors)
 	def nGrams(self,n,min_appearances,respect_words=False):
 		"""
 		Calculate n-grams
@@ -402,7 +412,7 @@ class RuneText(object):
 					worddic = { word_runes:[word_pos] }
 					returnlist.update(worddic)
 		
-		return sorted(returnlist.items())
+		return returnlist
 	def processWordDistances(self,wordlength,addwordlength=False):
 		"""
 		Returns the distances between words 
@@ -435,6 +445,42 @@ class RuneText(object):
 		for distance in word_distances:
 			factors.append(self.factorize(distance))
 		return factors
+	def createFactorStatistics(self,factors):
+		"""
+		Creates a statistic of the given factors
+		"""
+		factor_stats = {}
+		for f in factors:
+			f_used_factors = []
+			for i in range(0,len(f)):
+				if f[i] in factor_stats and f[i] not in f_used_factors :
+					factor_stats[f[i]] += 1
+					f_used_factors.append(f[i])
+				elif f[i] not in f_used_factors:
+					factor_stats.update({ f[i]:1 })
+					f_used_factors.append(f[i])
+				if i > 0:
+					factor_mult = 1
+					for i in range(0,i):
+						factor_mult *= f[i]
+					if factor_mult in factor_stats and factor_mult not in f_used_factors:
+						factor_stats[factor_mult] += 1
+						f_used_factors.append(factor_mult)
+					elif factor_mult not in f_used_factors:
+						factor_stats.update({ factor_mult:1 })
+						f_used_factors.append(factor_mult)
+		
+		# Delete factors with only one appearance, calc percentage
+		key_removal = []
+		for key in factor_stats:
+			if factor_stats[key] < 2:
+				key_removal.append(key)
+			else:
+				factor_stats[key] = factor_stats[key] / len(factors)
+		for key in key_removal:
+			del factor_stats[key]
+		
+		return sorted(sorted(factor_stats.items()),reverse=True,key=lambda x: x[1])
 	def factorize(self,n):
 		"""
 		Prime factorization
@@ -447,7 +493,7 @@ class RuneText(object):
 				n /= d
 			d += 1
 		if n > 1:
-			primfac.append(n)
+			primfac.append(int(n))
 		return primfac
 	def resetMask(self):
 		"""
