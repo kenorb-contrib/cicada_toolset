@@ -75,10 +75,10 @@ class RuneText(object):
 		self.numRunes()
 
 		# Calculate distribution of runes
-		self.calculateDistribution()
+		self.distribution = self.calculateDistribution()
 		
 		# Calculate Index of Coincidence
-		self.calculateIOC()
+		self.ioc = self.calculateIOC()
 		
 		# Do Friedman test
 		self.calculateFriedman()
@@ -142,30 +142,47 @@ class RuneText(object):
 						rune_array.append(-1)
 				word_array.append(rune_array)
 			self.words = word_array
-	def calculateDistribution(self):
+	def calculateDistribution(self,text="",use_runes=0):
 		"""
 		Calculate rune distribution of text
 		"""
 		count_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 		percentage = [0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
-		for word in self.words:
-			for rune in word:
+		if len(text) == 0:
+			text = self.words
+			user_runes = 0
+		if not use_runes:
+			runecount = 0
+			for word in text:
+				for rune in word:
+					if rune >= 0 and rune < 29:
+						count_array[rune] += 1
+						runecount += 1
+			for i in range(0,29):
+				percentage[i] = count_array[i] / runecount
+		else:
+			runecount = 0
+			for rune in text:
 				if rune >= 0 and rune < 29:
 					count_array[rune] += 1
-		for i in range(0,29):
-			percentage[i] = (count_array[i] / self.nor) * 100.0
+					runecount += 1
+			for i in range(0,29):
+				percentage[i] = count_array[i] / runecount
 		distribution_array = []
 		distribution_array.append(count_array)
 		distribution_array.append(percentage)
-		self.distribution = distribution_array
-	def calculateIOC(self):
+		return distribution_array
+	def calculateIOC(self,distribution=-1,length=-1):
 		"""
 		Calculate the Index of Coincidence
 		"""
 		count_sum = 0
-		for count in self.distribution[0]:
+		if distribution == -1:
+			distribution = self.distribution
+			length = self.nor
+		for count in distribution[0]:
 			count_sum += count*(count-1)
-		self.ioc = count_sum/(self.nor*(self.nor-1))
+		return count_sum/(length*(length-1))
 	def calculateFriedman(self):
 		"""
 		Do the Friedman test 
@@ -188,7 +205,52 @@ class RuneText(object):
 			factors.extend(self.processWordDistanceFactors(self.processWordDistances(length[0],add_word_length)))
 		
 		# Do factor statistics
-		return self.createFactorStatistics(factors)
+		return self.createFactorStatistics(factors,min_appearance=2)
+	def iocOfKeylength(self,keylength):
+		"""
+		Calculate the average ioc of a specific keylength
+		"""
+		
+		# Reorganize runes by keylength
+		rune_matrix = []
+		row = []
+		counter = 0
+		for word in self.words:
+			for rune in word:
+				if counter == 0:
+					row = []
+				row.append(rune)
+				counter += 1
+				if counter == keylength:
+					counter = 0
+					rune_matrix.append(row)
+					
+		# Create column matrix and calculate average ioc
+		ioc_average = 0
+		for x in range(0,keylength):
+			column = []
+			for i in range(0,len(rune_matrix)):
+				if len(rune_matrix[i]) >= x:
+					column.append(rune_matrix[i][x])
+			ioc_average += self.calculateIOC(distribution=self.calculateDistribution(text=column,use_runes=1),length=len(column))
+		ioc_average /= keylength
+			
+		return ioc_average
+	def calculateKeylengthIOCs(self,kasiski=-1):
+		"""
+		Returns IOCs of 1) all possible keylenghts 2) kasiski keylengths
+		"""
+		iocs = {}
+		if kasiski == -1:
+			for x in range(1,self.nor+1):
+				print(x)
+				iocs.update({ x: self.iocOfKeylength(x) })
+		else:
+			for stat in kasiski:
+				print(stat[0])
+				iocs.update({ stat[0]: self.iocOfKeylength(stat[0]) })
+		
+		return sorted(sorted(iocs.items()),reverse=True,key=lambda x: x[1])
 	def nGrams(self,n,min_appearances,respect_words=False):
 		"""
 		Calculate n-grams
@@ -445,7 +507,7 @@ class RuneText(object):
 		for distance in word_distances:
 			factors.append(self.factorize(distance))
 		return factors
-	def createFactorStatistics(self,factors):
+	def createFactorStatistics(self,factors,min_appearance=1):
 		"""
 		Creates a statistic of the given factors
 		"""
@@ -473,7 +535,7 @@ class RuneText(object):
 		# Delete factors with only one appearance, calc percentage
 		key_removal = []
 		for key in factor_stats:
-			if factor_stats[key] < 2:
+			if factor_stats[key] < min_appearance:
 				key_removal.append(key)
 			else:
 				factor_stats[key] = factor_stats[key] / len(factors)
