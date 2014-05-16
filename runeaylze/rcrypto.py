@@ -2,6 +2,9 @@
 crypto.py: Python module for rune-text analyzing
 """
 import re
+import collections
+import numpy as np
+import matplotlib.pyplot as plt
 
 RuneNumbers = { "f":0,"u":1,"th":2,"o":3,"r":4,
 	"c":5,"k":5,"c/k":5,"g":6,"w":7,"h":8,
@@ -103,7 +106,7 @@ class RuneText(object):
 		count = 0
 		for word in self.words:
 			for rune in word:
-				if rune >= 0 and rune < 29:
+				if rune >= 0 and rune < 28:
 					count += 1
 		self.nor = count
 	def parseLine(self,line):
@@ -654,3 +657,30 @@ class RuneText(object):
 		# Fill mask with function values
 		for i in range(self.nor):
 			self.mask.append(RunesASCII[function(i+start_x) % 29].lower())
+	def autocorrelation(self,wordlist=-1,charstocompare=1):
+		"""
+		Caluclate the autocorrelation of a wordlist
+		"""
+		
+		# Get runes from wordlist
+		runes = collections.deque()
+		rot = collections.deque()
+		if isinstance(wordlist, int):
+			for word in self.words:
+				for rune in word:
+					runes.append(rune)
+					rot.append(rune)
+		runes_np = np.array(runes)
+		
+		# Calculate autocorrelation
+		ac = []
+		for y in range(0,int(len(runes)/2)-1):
+			rot.rotate(charstocompare)
+			rot_np = np.array(rot)
+			ac.append(np.bincount(np.absolute(runes_np-rot_np))[0])
+		
+		# Plot Autocorrelation
+		fig, ax = plt.subplots()
+		ind = np.arange(len(ac))
+		ax.bar(ind,ac,color='r')
+		plt.show()
