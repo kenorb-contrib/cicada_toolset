@@ -106,7 +106,7 @@ class RuneText(object):
 		count = 0
 		for word in self.words:
 			for rune in word:
-				if rune >= 0 and rune < 28:
+				if rune >= 0 and rune < 29:
 					count += 1
 		self.nor = count
 	def parseLine(self,line):
