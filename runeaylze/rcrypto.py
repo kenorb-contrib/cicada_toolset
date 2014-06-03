@@ -412,6 +412,7 @@ class RuneText(object):
 					key_counter += 1
 				else:
 					key_counter = 0
+
 			if rune_counter < max_displayed_chars:
 				text1 += " "
 				text2 += " "
@@ -673,14 +674,30 @@ class RuneText(object):
 		runes_np = np.array(runes)
 		
 		# Calculate autocorrelation
-		ac = []
+		self.ac = []
 		for y in range(0,int(len(runes)/2)-1):
 			rot.rotate(charstocompare)
 			rot_np = np.array(rot)
-			ac.append(np.bincount(np.absolute(runes_np-rot_np))[0])
+			self.ac.append(np.bincount(np.absolute(runes_np-rot_np))[0])
 		
 		# Plot Autocorrelation
 		fig, ax = plt.subplots()
-		ind = np.arange(len(ac))
-		ax.bar(ind,ac,color='r')
+		ind = np.arange(len(self.ac))
+		ax.bar(ind,self.ac,color='r')
 		plt.show()
+	def key_from_primes(self,primes,ne=-1):
+		"""
+		Creates a key from primes
+		"""
+		primes_mod29 = []
+		for prime in primes:
+			primes_mod29.append((prime % 29)-1)
+		primes_return = []
+		for x in range(0,len(primes_mod29)):
+			if ne != -1 and x == ne:
+				primes_return.append(0)
+			if prime == -1:
+				primes_return.append(primes_mod29[x]+29)
+			else:
+				primes_return.append(primes_mod29[x])
+		return "-".join(str(x) for x in primes_return)
